@@ -25,7 +25,7 @@ def main():
 
     st.title(":game_die: Boardgame Reviewer :game_die:")
     st.write("Jsem tu, abych vám poskytl recenzi na vámi hledanou deskovou hru. \
-                Na základě vašich preferencí a hodnocení hráčů z celého světa zkusím odhadnout, \
+                Na základě vašich oblíbených kategorií a hodnocení hráčů z celého světa zkusím odhadnout, \
                 zda by se vám hra mohla líbit.")
 
     # Keeping track of selected categories
@@ -33,14 +33,15 @@ def main():
         st.session_state.selected_categories = []
 
     with st.form(key="user_input_form"):
-        boardgame = st.text_input("Jaká desková hra vás zajímá?", placeholder="Napište název hry")
+        boardgame = st.text_input("Jaká desková hra vás zajímá?",
+                                  placeholder="Napište název hry (např. Mars: Teraformace)")
 
         # Předpřipravené kategorie
-        categories = ["Abstraktní strategie", "Blafování", "Bojové hry", "Budování měst", "Budování teritoria",
-                      "Civilizace", "Dobrodružné hry", "Ekonomické hry", "Fantasy", "Gamebooky", "Historie",
-                      "Horor", "Hry s miniaturami", "Hry s kostkami", "Humor", "Karetní hry",
-                      "Mytologie", "Párty hry", "Politické hry", "Průzkum", "Sci-Fi",
-                      "Vzdělávací hry", "Zvířata"]
+        categories = ["Abstraktní strategie", "Blafování", "Bojové hry", "Budování měst",
+                      "Budování teritoria", "Civilizace", "Dobrodružné hry", "Ekonomické hry",
+                      "Fantasy", "Gamebooky", "Historie", "Horor", "Hry s miniaturami",
+                      "Hry s kostkami", "Humor", "Karetní hry", "Mytologie", "Párty hry",
+                      "Politické hry", "Průzkum", "Sci-Fi", "Vzdělávací hry", "Zvířata"]
         selected_categories = st.multiselect(
             "Vyberte své oblíbené kategorie:",
             categories,
