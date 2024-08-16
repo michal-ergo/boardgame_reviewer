@@ -34,14 +34,15 @@ def main():
 
     with st.form(key="user_input_form"):
         boardgame = st.text_input("Jaká desková hra vás zajímá?",
-                                  placeholder="Napište název hry (např. Mars: Teraformace)")
+                                  placeholder="Napište název hry (např. Osadníci z Katanu)")
 
         # Předpřipravené kategorie
         categories = ["Abstraktní strategie", "Blafování", "Bojové hry", "Budování měst",
                       "Budování teritoria", "Civilizace", "Dobrodružné hry", "Ekonomické hry",
                       "Fantasy", "Gamebooky", "Historie", "Horor", "Hry s miniaturami",
                       "Hry s kostkami", "Humor", "Karetní hry", "Mytologie", "Párty hry",
-                      "Politické hry", "Průzkum", "Sci-Fi", "Vzdělávací hry", "Zvířata"]
+                      "Politické hry", "Průzkum", "Sci-Fi", "Vyjednávání", "Vzdělávací hry",
+                      "Zvířata"]
         selected_categories = st.multiselect(
             "Vyberte své oblíbené kategorie:",
             categories,
