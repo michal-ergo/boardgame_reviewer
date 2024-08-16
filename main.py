@@ -2,6 +2,7 @@
 import logging
 import openai
 import streamlit as st
+from openai import BadRequestError
 from dotenv import load_dotenv
 from tools import assistant_tools
 from assistant_manager import AssistantManager
@@ -68,13 +69,18 @@ def main():
             manager = AssistantManager(
                 client, st.session_state["assistant"], st.session_state["thread"])
 
-            manager.add_message_to_thread(
-                role="user", content=f"Napiš recenzi o deskové hře {boardgame}.\
-                Mé oblíbené kategorie her jsou: {', '.join(selected_categories)}.")
-            manager.run_assistant()
-            manager.wait_for_run_to_complete()
+            try:
+                manager.add_message_to_thread(
+                    role="user", content=f"Napiš recenzi o deskové hře {boardgame}. \
+                    Mé oblíbené kategorie her jsou: {', '.join(selected_categories)}.")
+                
+                manager.run_assistant()
+                manager.wait_for_run_to_complete()
 
-            st.write(manager.get_review())
+                st.write(manager.get_review())
+            except BadRequestError as e:
+                st.error("Probíhá již jiný dotaz, zkuste to prosím později.")
+                logging.error("BadRequestError: %s", str(e))
 
 if __name__ == "__main__":
     main()
