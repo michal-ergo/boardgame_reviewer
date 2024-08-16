@@ -51,7 +51,7 @@ Defines the tools used by the OpenAI assistant to retrieve game information and 
 ### requirements.txt
 Lists all Python dependencies needed for the project.
 
-## Planned Features
+## Future Work
 
 Possible future features include:
 
