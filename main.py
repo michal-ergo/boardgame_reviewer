@@ -36,7 +36,7 @@ def main():
         boardgame = st.text_input("Jaká desková hra vás zajímá?", placeholder="Napište název hry")
 
         # Předpřipravené kategorie
-        categories = ["Abstraktní strategie", "Blafování", "Bojové hry", "Boj o teritorium", "Budování měst",
+        categories = ["Abstraktní strategie", "Blafování", "Bojové hry", "Budování měst", "Budování teritoria",
                       "Civilizace", "Dobrodružné hry", "Ekonomické hry", "Fantasy", "Gamebooky", "Historie",
                       "Horor", "Hry s miniaturami", "Hry s kostkami", "Humor", "Karetní hry",
                       "Mytologie", "Párty hry", "Politické hry", "Průzkum", "Sci-Fi",
