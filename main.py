@@ -23,7 +23,7 @@ def main():
     client = openai.OpenAI()
     model = 'gpt-4o-mini'
 
-    st.title("Boardgame Reviewer")
+    st.title(":game_die: Boardgame Reviewer :game_die:")
     st.write("Jsem tu, abych vám poskytl recenzi na vámi hledanou deskovou hru. \
                 Na základě vašich preferencí a hodnocení hráčů z celého světa zkusím odhadnout, \
                 zda by se vám hra mohla líbit.")
