@@ -34,11 +34,6 @@ Select your favorite categories from the provided list.
 
 The app will generate a personalized review of the game based on your input and the game's data from BoardGameGeek.com.
 
-
-```python
-import foobar
-```
-
 ## Project Structure
 
 ### main.py
