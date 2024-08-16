@@ -44,7 +44,7 @@ def main():
                       "Politické hry", "Průzkum", "Sci-Fi", "Vyjednávání", "Vzdělávací hry",
                       "Zvířata"]
         selected_categories = st.multiselect(
-            "Vyberte své oblíbené kategorie:",
+            "Zde můžete vybrat své oblíbené kategorie:",
             categories,
             default=st.session_state.selected_categories,
             placeholder="Vyberte kategorie"
