@@ -1,0 +1,7 @@
+# Environments
+.env
+myenv/
+
+__pycache__/
+app.log
+criteria.txt
