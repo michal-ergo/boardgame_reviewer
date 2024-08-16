@@ -8,8 +8,6 @@ To install the necessary dependencies, use the package manager pip.
 
 ```bash
 pip install -r requirements.txt
-
-pip install foobar
 ```
 
 You will also need to set up a .env file with your OpenAI API key.
@@ -39,15 +37,6 @@ The app will generate a personalized review of the game based on your input and 
 
 ```python
 import foobar
-
-### returns 'words'
-foobar.pluralize('word')
-
-# returns 'geese'
-foobar.pluralize('goose')
-
-# returns 'phenomenon'
-foobar.singularize('phenomena')
 ```
 
 ## Project Structure
