@@ -14,6 +14,10 @@ pip install foobar
 
 You will also need to set up a .env file with your OpenAI API key.
 
+```bash
+OPENAI_API_KEY = "..."
+```
+
 ## Usage
 
 ### Run the Application:
