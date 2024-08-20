@@ -2,7 +2,7 @@
 import logging
 import openai
 import streamlit as st
-from openai import BadRequestError
+from openai import BadRequestError, OpenAIError
 from dotenv import load_dotenv
 from tools import assistant_tools
 from assistant_manager import AssistantManager
@@ -14,10 +14,53 @@ def read_instructions(file_path):
             return file.read()
     except FileNotFoundError:
         logging.error("File not found: %s. Assistant instructions not available.", file_path)
-        raise
+        st.error("Instrukce asistenta nebyly nalezeny. Zkuste to prosím později.")
+        st.stop()
+
+def initialize_assistant(client, model, assistant_instructions):
+    """Initialize the assistant with the specified model and instructions."""
+    try:
+        if "assistant" not in st.session_state:
+            assistant = client.beta.assistants.create(
+                name="BoardGameReviewer",
+                model=model,
+                instructions=read_instructions(assistant_instructions),
+                tools=assistant_tools
+            )
+            st.session_state["assistant"] = assistant
+    except OpenAIError as e:
+        logging.error("Error initializing assistant: %s", str(e))
+        st.error("Chyba při inicializaci asistenta. Zkuste to prosím později.")
+        st.stop()
+
+def initialize_thread(client):
+    """Initialize a new thread for the assistant."""
+    try:
+        if "thread" not in st.session_state:
+            thread = client.beta.threads.create()
+            st.session_state["thread"] = thread
+    except OpenAIError as e:
+        logging.error("Error initializing thread: %s", str(e))
+        st.error("Chyba při vytváření vlákna. Zkuste to prosím později.")
+        st.stop()
+
+def fetch_and_display_review(manager, boardgame, selected_categories):
+    """Fetch the review from the assistant and display it."""
+    try:
+        manager.add_message_to_thread(
+            role="user", content=f"Napiš recenzi o deskové hře {boardgame}. \
+            Mé oblíbené kategorie her jsou: {', '.join(selected_categories)}.")
+
+        manager.run_assistant()
+        manager.wait_for_run_to_complete()
+
+        st.write(manager.get_review())
+    except BadRequestError as e:
+        st.error("Probíhá již jiný dotaz, zkuste to prosím později.")
+        logging.error("BadRequestError: %s", str(e))
 
 def main():
-    """Main function."""
+    """Main function with StreamLit frontend."""
     load_dotenv()
     logging.basicConfig(filename='app.log')
 
@@ -54,33 +97,13 @@ def main():
         submit_button = st.form_submit_button(label="Hledat")
 
         if submit_button:
-
-            if "assistant" not in st.session_state:
-                assistant = client.beta.assistants.create(name="BoardGameReviewer",
-                    model=model,
-                    instructions=read_instructions("assistant_instructions.txt"),
-                    tools=assistant_tools)
-                st.session_state["assistant"] = assistant
-
-            if "thread" not in st.session_state:
-                thread = client.beta.threads.create()
-                st.session_state["thread"] = thread
+            initialize_assistant(client, model, "assistant_instructions.txt")
+            initialize_thread(client)
 
             manager = AssistantManager(
                 client, st.session_state["assistant"], st.session_state["thread"])
 
-            try:
-                manager.add_message_to_thread(
-                    role="user", content=f"Napiš recenzi o deskové hře {boardgame}. \
-                    Mé oblíbené kategorie her jsou: {', '.join(selected_categories)}.")
-                
-                manager.run_assistant()
-                manager.wait_for_run_to_complete()
-
-                st.write(manager.get_review())
-            except BadRequestError as e:
-                st.error("Probíhá již jiný dotaz, zkuste to prosím později.")
-                logging.error("BadRequestError: %s", str(e))
+            fetch_and_display_review(manager, boardgame, selected_categories)
 
 if __name__ == "__main__":
     main()

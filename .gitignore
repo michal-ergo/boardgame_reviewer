@@ -5,3 +5,5 @@ myenv/
 __pycache__/
 app.log
 criteria.txt
+
+main_backup.py

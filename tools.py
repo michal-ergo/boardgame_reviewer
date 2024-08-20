@@ -1,4 +1,4 @@
-""" tools.py - BOARDGAME REVIEWER """
+""" tools.py - BOARDGAME REVIEWER AI TOOLS """
 
 assistant_tools = [
     {
