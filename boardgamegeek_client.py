@@ -6,105 +6,95 @@ import requests
 class BoardGameGeekClient:
     """Class for extracting data from BoardGameGeek.com"""
     def __init__(self):
-        self.base_url = 'https://www.boardgamegeek.com/xmlapi2/'
+        self.base_url = "https://www.boardgamegeek.com/xmlapi2/"
+        self.game_details = {
+            "name": "Název nenalezen",
+            "description": "Popis nenalezen",
+            "minplayers": "Minimální počet hráčů nenalezen",
+            "maxplayers": "Maximální počet hráčů nenalezen",
+            "playingtime": "Herní čas nenalezen",
+            "minage": "Minimální věk nenalezen",
+            "average_rating": "Rating nenalezen",
+            "categories": []
+        }
+
+    def fetch_data(self, url):
+        """Fetch data from BoardGameGeek.com and return the response content"""
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            return response.content
+        except requests.exceptions.RequestException as e:
+            logging.error("HTTP error occurred: %s", str(e))
+            return None
 
     def get_game_info(self, searched_game_name):
         """Method gets formatted game info from BoardGameGeek.com"""
         searched_game_id = self.get_game_id(searched_game_name)
         if searched_game_id:
-            searched_game_details = self.get_boardgame_details(searched_game_id)
-            return self.format_boardgame_details(searched_game_details)
+            self.get_boardgame_details(searched_game_id)
+            return self.format_boardgame_details(self.game_details)
         return None
 
     def get_game_id(self, searched_game_name):
         """Method gets game ID from BoardGameGeek.com"""
-        url = self.base_url + 'search?query=' + searched_game_name + '&type=boardgame'
+        url = self.base_url + "search?query=" + searched_game_name + "&type=boardgame"
+        content = self.fetch_data(url)
 
-        try:
-            response = requests.get(url, timeout=10)
-            response.raise_for_status()  # Raise an HTTPError for bad responses
-        except requests.exceptions.RequestException as e:
-            logging.error("HTTP error occurred: %s", str(e))
+        if not content:
             return None
 
         try:
-            root = ET.fromstring(response.content) # Parsing XML data
+            root = ET.fromstring(content) # Parsing XML data
         except ET.ParseError as e:
             logging.error("XML parsing error: %s", str(e))
             return None
 
         # Search results and return the ID of the first match
-        for item in root.findall('.//item'):
-            name_element = item.find('name')
+        for item in root.findall(".//item"):
+            name_element = item.find("name")
             if name_element is not None:
-                current_name = name_element.attrib.get('value', '')
+                current_name = name_element.attrib.get("value", "")
                 if current_name.lower() == searched_game_name.lower():
-                    return item.attrib['id']
+                    return item.attrib["id"]
 
         # If no match is found, return the ID of the first result
-        first_item = root.find('.//item')
+        first_item = root.find(".//item")
         if first_item is not None:
-            first_item_id = first_item.attrib['id']
-            return first_item_id
+            return first_item.attrib["id"]
 
         logging.warning("No matching game found for %s", searched_game_name)
         return None
 
     def get_boardgame_details(self, game_id):
         """Gets game details from BoardGameGeek.com by game ID"""
-        url = self.base_url + 'thing?id=' + game_id + '&stats=1'
+        url = self.base_url + "thing?id=" + game_id + "&stats=1"
+        content = self.fetch_data(url)
+        if content:
+            try:
+                root = ET.fromstring(content)
+            except ET.ParseError as e:
+                logging.error("XML parsing error: %s", str(e))
+                return
 
-        try:
-            response = requests.get(url, timeout=10)
-            response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            logging.error("HTTP error occurred while fetching game details: %s", str(e))
-            return {
-                'name': None,
-                'description': None,
-                'minplayers': None,
-                'maxplayers': None,
-                'playingtime': None,
-                'minage': None,
-                'average_rating': None,
-                'categories': []
-            }
+            self.game_details["name"] = root.find('.//name[@type="primary"]').attrib.get(
+                'value', 'Název nenalezen')
+            self.game_details["description"] = root.find('.//description').text or "Popis nenalezen"
+            self.game_details["minplayers"] = root.find('.//minplayers').attrib.get(
+                                                'value', 'Minimální počet hráčů nenalezen')
+            self.game_details["maxplayers"] = root.find('.//maxplayers').attrib.get(
+                                                'value', 'Maximální počet hráčů nenalezen')
+            self.game_details["playingtime"] = root.find('.//playingtime').attrib.get(
+                                                'value', 'Herní čas nenalezen') + " minut"
+            self.game_details["minage"] = root.find('.//minage').attrib.get(
+                                                'value', 'Minimální věk nenalezen')
+            self.game_details["average_rating"] = root.find('.//average').attrib.get(
+                                                'value', 'Rating nenalezen')
+            self.game_details["categories"] = [link.attrib['value'] for link in root.findall(
+                                                './/link[@type="boardgamecategory"]')]
 
-        try:
-            # Parsing XML data
-            root = ET.fromstring(response.content)
-        except ET.ParseError as e:
-            logging.error("XML parsing error in game details: %s", {str(e)})
-            return {
-                'name': None,
-                'description': None,
-                'minplayers': None,
-                'maxplayers': None,
-                'playingtime': None,
-                'minage': None,
-                'average_rating': None,
-                'categories': []
-            }
-
-        # Create dictionary with game details
-        game_details = {
-            "name": root.find('.//name[@type="primary"]').attrib.get('value', 'Název nenalezen'),
-            "description": root.find('.//description').text or "Popis nenalezen",
-            "minplayers": root.find('.//minplayers').attrib.get('value', 'Minimální počet hráčů nenalezen'),
-            "maxplayers": root.find('.//maxplayers').attrib.get('value', 'Maximální počet hráčů nenalezen'),
-            "playingtime": root.find('.//playingtime').attrib.get('value', 'Herní čas nenalezen') + " minut",
-            "minage": root.find('.//minage').attrib.get('value', 'Minimální věk nenalezen'),
-            "average_rating": root.find('.//average').attrib.get('value', 'Rating nenalezen'),
-            "categories": [link.attrib['value'] for link in root.findall('.//link[@type="boardgamecategory"]')]
-        }
-
-        return game_details
-    
     def format_boardgame_details(self, game_details):
         """Format game details"""
-        if not game_details:
-            return {}
-
         formatted_boardgame_info = {
             "Název hry": game_details["name"] or "Název nenalezen",
             "Popis": game_details["description"] or "Popis nenalezen",
@@ -122,7 +112,7 @@ class BoardGameGeekClient:
 if __name__ == "__main__":
 
     bgg_client = BoardGameGeekClient()
-    GAME_NAME = "Scythe"
+    GAME_NAME = "Mars Teraformace"
     new_game_details = bgg_client.get_game_info(GAME_NAME)
 
     if new_game_details:

@@ -1,12 +1,8 @@
 """ assistant_manager.py - OPENAI ASSISTANT MANAGER """
 
 import logging
-import time
 import json
-from dotenv import load_dotenv
 from boardgamegeek_client import BoardGameGeekClient
-
-load_dotenv()
 
 class AssistantManager:
     """AssistantManager - OPENAI ASSISTANT MANAGER"""
@@ -16,6 +12,7 @@ class AssistantManager:
         self.thread = thread
         self.run = None
         self.review = None
+        self.bgg_client = BoardGameGeekClient()
 
     def add_message_to_thread(self, role, content):
         """Add message to thread if run is not active"""
@@ -55,11 +52,12 @@ class AssistantManager:
         while True:
             run = self.check_run()
 
-            if run.status == 'completed':
+            if run.status == "completed":
                 self.get_latest_response()
                 break
-            if run.status == 'requires_action':
-                tools_output = self.prepare_tool_outputs(run.required_action.submit_tool_outputs.model_dump())
+            if run.status == "requires_action":
+                tools_output = self.prepare_tool_outputs(
+                    run.required_action.submit_tool_outputs.model_dump())
                 if tools_output:
                     self.client.beta.threads.runs.submit_tool_outputs(
                         run_id=self.run.id,
@@ -68,10 +66,9 @@ class AssistantManager:
                     )
                 else:
                     logging.error("Error - tool outputs not found.")
-            elif run.status == 'failed':
-                logging.error("Run failed.")                
+            elif run.status == "failed":
+                logging.error("Run failed.")
                 break
-            time.sleep(2)
 
     def get_review(self):
         """Get final review"""
@@ -85,8 +82,7 @@ class AssistantManager:
 
     def get_boardgame_info(self, boardgame_name):
         """Get boardgame info from BGG using BoardGameGeekClient"""
-        bgg_client = BoardGameGeekClient()
-        game_info = bgg_client.get_game_info(boardgame_name)
+        game_info = self.bgg_client.get_game_info(boardgame_name)
         return game_info
 
     def prepare_tool_outputs(self, tool_calls):

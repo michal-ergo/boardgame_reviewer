@@ -7,3 +7,4 @@ app.log
 criteria.txt
 
 main_backup.py
+boardgamegeek_client_backup.py
