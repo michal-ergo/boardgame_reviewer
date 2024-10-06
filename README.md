@@ -55,7 +55,7 @@ Lists all Python dependencies needed for the project.
 
 Possible future features include:
 
-### Iproved SQL functionalities
+### Improved SQL functionalities
 Current version stores some fetched info about boardgames into a SQL database. Future goal is to store not only basic info, but also all generated reviews
 into an SQL database for easy access, searching, and analysis.
 

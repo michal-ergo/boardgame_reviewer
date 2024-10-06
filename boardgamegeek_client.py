@@ -1,8 +1,8 @@
 """ boardgamegeek_client.py - BOARDGAME REVIEWER """
 import logging
 import xml.etree.ElementTree as ET
-import requests
 import sqlite3
+import requests
 
 class BoardGameGeekClient:
     """Class for extracting data from BoardGameGeek.com"""
