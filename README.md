@@ -55,8 +55,9 @@ Lists all Python dependencies needed for the project.
 
 Possible future features include:
 
-### SQL Database for Reviews
-Implementing an SQL database to store all generated reviews, allowing for easy access, searching, and analysis of past reviews.
+### Iproved SQL functionalities
+Current version stores some fetched info about boardgames into a SQL database. Future goal is to store not only basic info, but also all generated reviews
+into an SQL database for easy access, searching, and analysis.
 
 ### Unit Testing
 Adding comprehensive unit tests to ensure the reliability and accuracy of the application's components.
