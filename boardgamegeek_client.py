@@ -2,6 +2,7 @@
 import logging
 import xml.etree.ElementTree as ET
 import requests
+import sqlite3
 
 class BoardGameGeekClient:
     """Class for extracting data from BoardGameGeek.com"""
@@ -18,6 +19,8 @@ class BoardGameGeekClient:
             "categories": []
         }
 
+        self.create_table_if_not_exists()
+
     def fetch_data(self, url):
         """Fetch data from BoardGameGeek.com and return the response content"""
         try:
@@ -33,7 +36,9 @@ class BoardGameGeekClient:
         searched_game_id = self.get_game_id(searched_game_name)
         if searched_game_id:
             self.get_boardgame_details(searched_game_id)
+            self.save_game_to_db(self.game_details)
             return self.format_boardgame_details(self.game_details)
+
         return None
 
     def get_game_id(self, searched_game_name):
@@ -85,7 +90,7 @@ class BoardGameGeekClient:
             self.game_details["maxplayers"] = root.find('.//maxplayers').attrib.get(
                                                 'value', 'Maximální počet hráčů nenalezen')
             self.game_details["playingtime"] = root.find('.//playingtime').attrib.get(
-                                                'value', 'Herní čas nenalezen') + " minut"
+                                                'value', 'Herní čas nenalezen')
             self.game_details["minage"] = root.find('.//minage').attrib.get(
                                                 'value', 'Minimální věk nenalezen')
             self.game_details["average_rating"] = root.find('.//average').attrib.get(
@@ -100,7 +105,7 @@ class BoardGameGeekClient:
             "Popis": game_details["description"] or "Popis nenalezen",
             "Počet hráčů": (game_details["minplayers"] or "Minimální počet hráčů nenalezen")
                 + "-" + (game_details["maxplayers"] or "Maximální počet hráčů nenalezen"),
-            "Průměrná délka hry": (game_details["playingtime"] or "Herní čas nenalezen"),
+            "Průměrná délka hry": (game_details["playingtime"] + " minut" or "Herní čas nenalezen"),
             "Minimální věk": (game_details["minage"] or "Minimální věk nenalezen"),
             "Průměrné hodnocení": (game_details["average_rating"] or "Rating nenalezen"),
             "Kategorie": ", ".join(game_details["categories"]) or "Žádné kategorie"
@@ -108,11 +113,48 @@ class BoardGameGeekClient:
 
         return formatted_boardgame_info
 
+    def create_table_if_not_exists(self):
+        """Create table if it doesn't exist"""
+        conn = sqlite3.connect('searched_games.db')
+        c = conn.cursor()
+        c.execute('''CREATE TABLE IF NOT EXISTS boardgames (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
+                        description TEXT,
+                        playingtime INTEGER,
+                        maxplayers INTEGER,
+                        average_rating FLOAT
+                    )''')
+        conn.commit()
+        conn.close()
+
+    def save_game_to_db(self, boardgame_output):
+        """Save game details to SQLite database"""
+        if boardgame_output:
+            conn = sqlite3.connect('searched_games.db')
+            c = conn.cursor()
+
+            c.execute("SELECT 1 FROM boardgames WHERE name = :name", {
+                "name": boardgame_output["name"]})
+            result = c.fetchone()
+
+            if result:
+                pass
+            else:
+                c.execute("INSERT INTO boardgames(name, description, playingtime, maxplayers, average_rating) VALUES (:name, :description, :playingtime, :maxplayers, :average_rating)",
+                          {"name": boardgame_output["name"],
+                           "description": boardgame_output["description"],
+                           "playingtime": boardgame_output["playingtime"],
+                           "maxplayers": boardgame_output["maxplayers"], 
+                           "average_rating": boardgame_output["average_rating"]})
+            conn.commit()
+            conn.close()
+
 # Example usage
 if __name__ == "__main__":
 
     bgg_client = BoardGameGeekClient()
-    GAME_NAME = "Mars Teraformace"
+    GAME_NAME = "Expedice"
     new_game_details = bgg_client.get_game_info(GAME_NAME)
 
     if new_game_details:
